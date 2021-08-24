@@ -1,5 +1,6 @@
 package com.template.webserver
 
+import com.template.states.TemplateState
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -10,16 +11,19 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 @RequestMapping("/") // The paths for HTTP requests are relative to this base path.
-class Controller(rpc: NodeRPCConnection) {
+class Controller(private val serviceHubProxy: AppServiceHubProxy) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(RestController::class.java)
     }
 
-    private val proxy = rpc.proxy
+    @GetMapping(value = ["/"])
+    private fun root(): Any {
+        return serviceHubProxy.serviceHub.myInfo
+    }
 
-    @GetMapping(value = ["/templateendpoint"], produces = ["text/plain"])
-    private fun templateendpoint(): String {
-        return "Define an endpoint here."
+    @GetMapping(value = ["/query"])
+    private fun query(): Any {
+        return serviceHubProxy.serviceHub.vaultService.queryBy(TemplateState::class.java)
     }
 }
